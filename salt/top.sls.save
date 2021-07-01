@@ -1,0 +1,9 @@
+base:
+  '*':
+    - rsyslog
+    - munin
+  '*web*':
+    - 
+wordpress
+  '*docker*':
+    - docker

@@ -1,0 +1,24 @@
+include:
+  - copy_wordpress
+
+
+install wordpress packages: 
+  pkg.installed:
+    - pkgs:
+      - nginx
+      - nginx-common 
+      - nginx-full
+      - python-mysqldb
+      - python-pip
+      - php5-fpm
+      - php5-mysql
+    - skip_suggestions: true
+  
+  file.managed:
+    - name: /etc/nginx/sites-available/wordpress
+    - source: salt://wordpress/wordpress
+    - makedirs: True
+
+  cmd.script:
+    - name: wordpress.sh
+    - source: salt://wordpress/wordpress.sh

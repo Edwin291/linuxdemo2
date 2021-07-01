@@ -1,0 +1,74 @@
+56wordpress-packages:
+  pkg.installed:
+    - pkgs:
+      - nginx
+      - nginx-common
+      - nginx-full
+      - mariadb-server
+      - mariadb-client
+      - python-mysqldb
+      - python-pip
+      - php5-fpm
+      - php5-mysql
+    - skip_suggestions: true
+
+wordpress_db:
+  pip.installed:
+    - name: mysql
+  mysql_database.present:
+    - name: wordpress
+  mysql_user.present:
+    - name: wordpress
+    - password: p4ssw0rd
+  mysql_grants.present:
+    - database: wordpress.*
+    - grant: ALL PRIVILEGES
+    - user: wordpress
+    - host: 'localhost'
+
+get_wordpress:
+  cmd.run:
+    - name: 'wget -q -O - http://wordpress.org/latest.tar.gz | tar zxf - '
+    - cwd: /var/www
+    - creates: /var/www/wordpress/index.php
+    - runas: root
+
+/var/www/wordpress/wp-config.php:
+  file.managed:
+    - source: salt://vm/wp-config.php
+    - user: www-data
+    - group: www-data
+
+/var/www/wordpress:
+  file.directory:
+    - user: www-data
+    - group: www-data
+    - dir_mode: 775
+    - file_mode: 664
+    - recurse:
+      - user
+      - group
+      - mode
+
+
+/etc/php5/fpm/pool.d/www.conf:
+  file.replace:
+    - pattern: "listen = /var/run/php5-fpm.sock
+    - repl: "listen = 127.0.0.1:9000"
+    - append_if_not_found: True
+
+/etc/nginx/sites-available/vhost.conf:
+  file.managed:
+    - source: salt://vm/vhost.conf
+    - user: root
+    - group: wheel
+    - mode: 644
+
+/etc/nginx/sites-enabled/vhost.conf:
+  file.symlink:
+    - target: /etc/nginx/sites-available/vhost.conf
+
+nginx:
+  service.running:
+    - watch:
+      - file: /etc/nginx/sites-enabled/vhost.conf

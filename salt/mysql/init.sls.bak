@@ -1,0 +1,11 @@
+debconf-utils:
+  pkg.installed
+
+mysql_setup:
+  debconf.set:
+    - name: mysql-server
+    - data:
+        'mysql-server/root_password': {'type': 'password', 'value': '{{ salt['pillar.get']('root_pass', '') }}' }
+        'mysql-server/root_password_again': {'type': 'password', 'value': '{{ salt['pillar.get']('root_pass', '') }}' }
+    - require:
+      - pkg: debconf-utils
